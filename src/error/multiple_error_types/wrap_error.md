@@ -20,28 +20,20 @@ enum DoubleError {
 impl fmt::Display for DoubleError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DoubleError::EmptyVec =>
-                write!(f, "please use a vector with at least one element"),
+            DoubleError::EmptyVec => write!(f, "please use a vector with at least one element"),
             // 这是一个封装（wrapper），它采用内部各类型对 `fmt` 的实现。
-            DoubleError::Parse(ref e) => e.fmt(f),
+            DoubleError::Parse(..) =>  write!(f, "the provided string could not be parsed as int")
         }
     }
 }
 
 impl error::Error for DoubleError {
-    fn description(&self) -> &str {
-        match *self {
-            DoubleError::EmptyVec => "empty vectors not allowed",
-            // 这已经实现了 `Error`，所以采用它自己的实现。
-            DoubleError::Parse(ref e) => e.description(),
-        }
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
+    // The cause is the underlying implementation error type.
+    // Isimplicitly cast to the trait object `&error::Error`.
+    // This works because the underlying type already implements the `Error` trait.
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         match *self {
             DoubleError::EmptyVec => None,
-            // 原因采取内部对错误类型的实现。它隐式地转换成了 trait 对象 `&error:Error`。
-            // 这可以工作，因为内部的类型已经实现了 `Error` trait。
             DoubleError::Parse(ref e) => Some(e),
         }
     }
